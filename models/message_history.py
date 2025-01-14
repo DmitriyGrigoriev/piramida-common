@@ -56,10 +56,10 @@ class MessageHistory(models.Model):
     content_txt = models.TextField()
     content_html = models.TextField()
     receiver_person_id = models.IntegerField(db_index=True, blank=True, null=True)  # FIXME :: should be removed
-    receiver_email = models.TextField(blank=True, null=True)
+    receiver_email = models.TextField(blank=True, default="")
     created = models.DateTimeField(editable=False)
     sent = models.DateTimeField(null=True)
-    reference = models.CharField(max_length=100, null=True, db_index=True)
+    reference = models.CharField(max_length=100, default="", db_index=True)
     show_to_user = models.BooleanField(default=True)
     read_by_user = models.BooleanField(default=False)
 

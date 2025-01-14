@@ -30,6 +30,7 @@ from django.db import models
 
 from osis_common.models import osis_model_admin
 from osis_common.utils.inbox_outbox import HandlersPerContextFactory, InboxConsumer
+from django.utils.translation import gettext_lazy as _
 
 
 class InboxAdmin(osis_model_admin.OsisModelAdmin):
@@ -73,6 +74,17 @@ class InboxAdmin(osis_model_admin.OsisModelAdmin):
 
 
 class Inbox(models.Model):
+    class Meta:
+        verbose_name = _('Входящие')
+        verbose_name_plural = _('Входящие')
+        constraints = [
+            models.CheckConstraint(name="%(app_label)s_%(class)s_status_valid",
+                                   check=models.Q(status__in=["PENDING", "PROCESSED", "ERROR", "DEAD_LETTER"]))
+        ]
+        unique_together = (
+            'consumer', 'transaction_id',
+        )
+
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
     ERROR = "ERROR"
@@ -95,7 +107,7 @@ class Inbox(models.Model):
         default=PENDING,
     )
     last_execution_date = models.DateTimeField(null=True, blank=True)
-    traceback = models.TextField(null=True, blank=True)
+    traceback = models.TextField(blank=True, default="")
     attempts_number = models.IntegerField(default=0)
 
     class Meta:

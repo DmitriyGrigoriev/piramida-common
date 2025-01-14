@@ -26,6 +26,7 @@
 from django.db import models
 
 from osis_common.models import serializable_model, osis_model_admin
+from django.utils.translation import gettext_lazy as _
 
 
 class DocumentFileAdmin(osis_model_admin.OsisModelAdmin):
@@ -49,6 +50,16 @@ CONTENT_TYPE_CHOICES = (('application/csv', 'application/csv'),
 
 
 class DocumentFile(serializable_model.SerializableModel):
+    class Meta:
+        verbose_name = _('Документ')
+        verbose_name_plural = _('Документы')
+        constraints = [
+            models.CheckConstraint(name="%(app_label)s_%(class)s_content_type_valid", check=models.Q(
+                content_type__in=["application/csv", "application/doc", "application/pdf", "application/xls",
+                                  "application/xlsx", "application/xml", "application/zip", "image/jpeg", "image/gif",
+                                  "image/png", "text/html", "text/plain"])),
+        ]
+
     file_name = models.CharField(max_length=100)
     content_type = models.CharField(max_length=50, choices=CONTENT_TYPE_CHOICES, default='application/csv')
     creation_date = models.DateTimeField(auto_now_add=True, editable=False)
@@ -56,7 +67,7 @@ class DocumentFile(serializable_model.SerializableModel):
     file = models.FileField(upload_to='')
     description = models.CharField(max_length=50)
     update_by = models.CharField(max_length=254, default='system', db_index=True)
-    application_name = models.CharField(max_length=100, null=True, blank=True)
+    application_name = models.CharField(max_length=100, blank=True, default="")
     size = models.IntegerField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
