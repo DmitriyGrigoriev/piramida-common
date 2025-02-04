@@ -25,7 +25,7 @@
 ##############################################################################
 from django.contrib import admin
 
-NON_UPDATABLE_FIELDS = ["id", "uuid", "external_id", "changed", "deleted",]
+NON_UPDATABLE_FIELDS = ["id", "uuid", "external_id", "changed", "deleted"]
 
 
 class OsisModelAdmin(admin.ModelAdmin):
