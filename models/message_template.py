@@ -56,6 +56,12 @@ class MessageTemplate(models.Model):
 
     class Meta:
         unique_together = ('reference', 'language')
+        constraints = [
+            models.CheckConstraint(name="%(app_label)s_%(class)s_format_valid",
+                                   check=models.Q(format__in=["PLAIN", "HTML", "PLAIN_HTML"])),
+            models.CheckConstraint(name="%(app_label)s_%(class)s_language_valid",
+                                   check=models.Q(language__in=["en", "ru"]))
+        ]
 
 
 def find_by_reference(reference):

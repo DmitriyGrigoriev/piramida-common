@@ -27,6 +27,7 @@ import datetime
 
 from django.contrib import admin
 from django.db import models
+from django.db.models import UniqueConstraint
 
 from osis_common.models import osis_model_admin
 from osis_common.utils.inbox_outbox import HandlersPerContextFactory, InboxConsumer
@@ -36,7 +37,7 @@ from django.utils.translation import gettext_lazy as _
 class InboxAdmin(osis_model_admin.OsisModelAdmin):
     date_hierarchy = 'creation_date'
     list_display = (
-        'transaction_id', 'consumer', 'event_name',  'payload', 'creation_date', 'status', 'last_execution_date',
+        'transaction_id', 'consumer', 'event_name', 'payload', 'creation_date', 'status', 'last_execution_date',
     )
     readonly_fields = (
         'transaction_id', 'consumer', 'event_name', 'payload', 'creation_date', 'status', 'last_execution_date',
@@ -75,15 +76,13 @@ class InboxAdmin(osis_model_admin.OsisModelAdmin):
 
 class Inbox(models.Model):
     class Meta:
-        verbose_name = _('Входящие')
-        verbose_name_plural = _('Входящие')
+        verbose_name = _('Inbox')
+        verbose_name_plural = _('Inboxes')
         constraints = [
+            UniqueConstraint(fields=['consumer', 'transaction_id',], name='inbox_consumer_transaction_uniq'),
             models.CheckConstraint(name="%(app_label)s_%(class)s_status_valid",
                                    check=models.Q(status__in=["PENDING", "PROCESSED", "ERROR", "DEAD_LETTER"]))
         ]
-        unique_together = (
-            'consumer', 'transaction_id',
-        )
 
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
@@ -110,11 +109,6 @@ class Inbox(models.Model):
     traceback = models.TextField(blank=True, default="")
     attempts_number = models.IntegerField(default=0)
 
-    class Meta:
-        verbose_name_plural = "inbox"
-        unique_together = (
-            'consumer', 'transaction_id',
-        )
 
     def mark_as_processed(self):
         self.status = self.PROCESSED
